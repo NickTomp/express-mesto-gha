@@ -1,5 +1,6 @@
 const userRouter = require('express').Router();
 const user = require('../models/user');
+const mongoose = require('mongoose');
 /*Универсальный обработчик ошибок*/
 function userErrorsHandler(err, res) {
   if (err.name === "CastError") {
@@ -22,8 +23,18 @@ userRouter.get('/', (req, res) => {
 });
 /*Поиск конкретного пользователя по ID*/
 userRouter.get('/:id', (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    res.status(400).send({ message: `Переданы некорректные данные`})
+    return;
+  }
   user.findById(req.params.id)
-  .then(user => res.status(200).send(user))
+  .then((user) => {
+    if (user === null) {
+      res.status(404).send({ message: `Запрашиваемый пользователь не найден`})
+      return;
+    }
+    res.status(200).send(user)
+  })
   .catch((err) => {
     userErrorsHandler(err, res)
  });
