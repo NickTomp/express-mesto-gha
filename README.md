@@ -32,4 +32,4 @@
 
 ## Cсылка на репозиторий
 
-<!-- https://github.com/NickTomp/express-mesto-gha -->
+ <https://github.com/NickTomp/express-mesto-gha>
