@@ -14,7 +14,7 @@ function findUsers(req, res) {
 function findUserById(req, res) {
   user.findById(req.params.id)
     .then((resultUser) => {
-      if (user === null) {
+      if (resultUser === null) {
         res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Запрашиваемый пользователь не найден' });
         return;
       }

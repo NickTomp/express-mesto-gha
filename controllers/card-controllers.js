@@ -23,7 +23,7 @@ function createCard(req, res) {
 function deleteCard(req, res) {
   card.findByIdAndRemove(req.params.cardId)
     .then((resultCard) => {
-      if (card === null) {
+      if (resultCard === null) {
         res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Запрашиваемая карточка не найдена' });
         return;
       }
@@ -41,7 +41,7 @@ function likeCard(req, res) {
     { new: true },
   )
     .then((resultCard) => {
-      if (card === null) {
+      if (resultCard === null) {
         res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
         return;
       }
