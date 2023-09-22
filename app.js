@@ -39,13 +39,13 @@ app.use('/users', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().min(2).max(130),
+    avatar: Joi.string().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/i),
   }),
 }), userRouter);
 app.use('/cards', celebrate({
   body: Joi.object().keys({
     name: Joi.string(),
-    link: Joi.string(),
+    link: Joi.string().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/i),
   }).unknown(true),
 }), cardRouter);
 app.use('*', notFoundRouter);
