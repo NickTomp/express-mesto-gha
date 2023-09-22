@@ -43,7 +43,7 @@ app.use('/users', celebrate({
   }),
 }), userRouter);
 app.use('/cards', cardRouter);
-/* app.use('*', notFoundRouter); */
+app.use('*', notFoundRouter);
 app.use(errors());
 
 app.listen(PORT, () => {
