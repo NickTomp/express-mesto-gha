@@ -13,7 +13,7 @@ function findCards(req, res) {
 
 function createCard(req, res) {
   const { name, link } = req.body;
-  card.create({ name, link, owner: req.user._id })
+  card.create({ name, link, owner: req.user })
     .then((resultCard) => res.status(200).send({ data: resultCard }))
     .catch((err) => {
       errorsHandler(err, res);
@@ -21,13 +21,23 @@ function createCard(req, res) {
 }
 
 function deleteCard(req, res) {
-  card.findByIdAndRemove(req.params.cardId)
+  const error = new Error('permission');
+  card.findById(req.params.cardId)
     .then((resultCard) => {
+      console.log(req.user);
+      console.log(resultCard.owner);
       if (resultCard === null) {
         res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Запрашиваемая карточка не найдена' });
         return;
       }
-      res.status(200).send(resultCard);
+      if (req.user !== resultCard.owner._id.toString()) {
+        errorsHandler(error, res);
+        return;
+      }
+      card.findByIdAndRemove(req.params.cardId)
+        .then((Card) => {
+          res.status(200).send(Card);
+        });
     })
     .catch((err) => {
       errorsHandler(err, res);
@@ -37,7 +47,7 @@ function deleteCard(req, res) {
 function likeCard(req, res) {
   card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req.user } },
     { new: true },
   )
     .then((resultCard) => {
@@ -55,7 +65,7 @@ function likeCard(req, res) {
 function disLikeCard(req, res) {
   card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: req.user } },
     { new: true },
   )
     .then((resultCard) => {

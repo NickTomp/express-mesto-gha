@@ -1,24 +1,55 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const { celebrate, Joi, errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const notFoundRouter = require('./routes/notfound');
+const auth = require('./middlewares/auth');
+const {
+  createUser, login,
+} = require('./controllers/user-controllers');
 
 const { PORT = 3000 } = process.env;
 
 const app = express();
 mongoose.connect('mongodb://0.0.0.0:27017/mestodb');
 app.use(bodyParser.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64f9a1814aaa70fb1ae3ed29',
-  };
-  next();
-});
-app.use('/users', userRouter);
-app.use('/cards', cardRouter);
+app.use(cookieParser());
+
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(4),
+  }),
+}), login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(4),
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().min(2).max(130),
+  }),
+}), createUser);
+
+app.use(auth);
+app.use('/users', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().min(2).max(130),
+  }),
+}), userRouter);
+app.use('/cards', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string(),
+    link: Joi.string(),
+  }).unknown(true),
+}), cardRouter);
 app.use('*', notFoundRouter);
+app.use(errors());
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
