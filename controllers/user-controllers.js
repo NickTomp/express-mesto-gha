@@ -27,7 +27,19 @@ function findMe(req, res) {
       errorsHandler(err, res);
     });
 }
-
+function findUserById(req, res) {
+  user.findById(req.params.id)
+    .then((resultUser) => {
+      if (resultUser === null) {
+        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Запрашиваемый пользователь не найден' });
+        return;
+      }
+      res.status(200).send(resultUser);
+    })
+    .catch((err) => {
+      errorsHandler(err, res);
+    });
+}
 function createUser(req, res) {
   const {
     name, about, avatar, email, password,
@@ -45,7 +57,12 @@ function createUser(req, res) {
     .then((hash) => user.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((resultUser) => res.status(200).send({ data: resultUser }))
+    .then((resultUser) => res.status(200).send({
+      name: resultUser.name,
+      about: resultUser.about,
+      avatar: resultUser.avatar,
+      email: resultUser.email,
+    }))
     .catch((err) => {
       errorsHandler(err, res);
     });
@@ -97,7 +114,7 @@ function login(req, res) {
           res.cookie('jwt', token, {
             maxAge: 3600000 * 24 * 7,
             httpOnly: true,
-          }).end();
+          }).send({ message: 'login successful' });
           return true;
         });
       return true;
@@ -107,5 +124,5 @@ function login(req, res) {
     });
 }
 module.exports = {
-  findUsers, createUser, updateUser, updateUserAvatar, login, randomString, findMe,
+  findUsers, createUser, updateUser, updateUserAvatar, login, findUserById, randomString, findMe,
 };

@@ -42,13 +42,8 @@ app.use('/users', celebrate({
     avatar: Joi.string().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/),
   }),
 }), userRouter);
-app.use('/cards', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string(),
-    link: Joi.string().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/),
-  }).unknown(true),
-}), cardRouter);
-app.use('*', notFoundRouter);
+app.use('/cards', cardRouter);
+/* app.use('*', notFoundRouter); */
 app.use(errors());
 
 app.listen(PORT, () => {

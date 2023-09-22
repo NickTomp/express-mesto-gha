@@ -1,7 +1,8 @@
 const userRouter = require('express').Router();
+const { celebrate, Joi, errors } = require('celebrate');
 
 const {
-  findUsers, updateUser, updateUserAvatar, login, findMe,
+  findUsers, updateUser, updateUserAvatar, login, findUserById, findMe,
 } = require('../controllers/user-controllers');
 
 /* Поиск всех пользователей */
@@ -12,6 +13,15 @@ userRouter.get('/', (req, res) => {
 userRouter.get('/me', (req, res) => {
   findMe(req, res);
 });
+/* Поиск конкретного пользователя по ID */
+userRouter.get('/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().alphanum().length(24),
+  }),
+}), (req, res) => {
+  findUserById(req, res);
+});
+
 /* Обновление информации о пользователе */
 userRouter.patch('/me', (req, res) => {
   updateUser(req, res);
@@ -23,5 +33,6 @@ userRouter.patch('/me/avatar', (req, res) => {
 userRouter.post('/signin', (req, res) => {
   login(req, res);
 });
+userRouter.use(errors());
 
 module.exports = userRouter;

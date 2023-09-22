@@ -24,8 +24,6 @@ function deleteCard(req, res) {
   const error = new Error('permission');
   card.findById(req.params.cardId)
     .then((resultCard) => {
-      console.log(req.user);
-      console.log(resultCard.owner);
       if (resultCard === null) {
         res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Запрашиваемая карточка не найдена' });
         return;
