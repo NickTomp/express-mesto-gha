@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const NotFoundError = require('../errors/not-found-err');
 const DuplicateError = require('../errors/duplicate-err');
 const UnathorizedError = require('../errors/unathorized-err');
+const BadRequestError = require('../errors/bad-request-err');
 const user = require('../models/user');
 
 const randomString = 'b002d700beba35a4d4b5d89e99041aab';
@@ -47,10 +48,13 @@ function createUser(req, res, next) {
       email: resultUser.email,
     }))
     .catch((err) => {
-      if (err.code === 11000) {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Некорректные данные при создании пользователя'));
+      } else if (err.code === 11000) {
         next(new DuplicateError('Такой пользователь уже существует'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 }
 
@@ -61,7 +65,13 @@ function updateUser(req, res, next) {
     runValidators: true,
   })
     .then((resultUser) => res.status(200).send({ data: resultUser }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Некорректные данные при обновлении информации о пользователе'));
+      } else {
+        next(err);
+      }
+    });
 }
 
 function updateUserAvatar(req, res, next) {
@@ -71,7 +81,13 @@ function updateUserAvatar(req, res, next) {
     runValidators: true,
   })
     .then((resultUser) => res.status(200).send({ data: resultUser }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Некорректные данные при обновлении аватара'));
+      } else {
+        next(err);
+      }
+    });
 }
 
 function login(req, res, next) {

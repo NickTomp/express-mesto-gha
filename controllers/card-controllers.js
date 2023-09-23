@@ -1,6 +1,7 @@
 const card = require('../models/card');
 const NotFoundError = require('../errors/not-found-err');
 const PermissionError = require('../errors/permission-err');
+const BadRequestError = require('../errors/bad-request-err');
 
 function findCards(req, res, next) {
   card.find({})
@@ -12,7 +13,13 @@ function createCard(req, res, next) {
   const { name, link } = req.body;
   card.create({ name, link, owner: req.user })
     .then((resultCard) => res.status(200).send({ data: resultCard }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Некорректные данные при создании карточки'));
+      } else {
+        next(err);
+      }
+    });
 }
 
 function deleteCard(req, res, next) {
@@ -27,7 +34,8 @@ function deleteCard(req, res, next) {
       card.findByIdAndRemove(req.params.cardId)
         .then((Card) => {
           res.status(200).send(Card);
-        });
+        })
+        .catch(next);
     })
     .catch(next);
 }
