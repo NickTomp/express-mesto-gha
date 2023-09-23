@@ -1,48 +1,38 @@
-const errorsHandler = require('./errors-handler');
 const card = require('../models/card');
+const NotFoundError = require('../errors/not-found-err');
+const PermissionError = require('../errors/permission-err');
 
-const NOT_FOUND_ERROR_CODE = 404;
-
-function findCards(req, res) {
+function findCards(req, res, next) {
   card.find({})
     .then((resultCard) => res.status(200).send(resultCard))
-    .catch((err) => {
-      errorsHandler(err, res);
-    });
+    .catch(next);
 }
 
-function createCard(req, res) {
+function createCard(req, res, next) {
   const { name, link } = req.body;
   card.create({ name, link, owner: req.user })
     .then((resultCard) => res.status(200).send({ data: resultCard }))
-    .catch((err) => {
-      errorsHandler(err, res);
-    });
+    .catch(next);
 }
 
-function deleteCard(req, res) {
-  const error = new Error('permission');
+function deleteCard(req, res, next) {
   card.findById(req.params.cardId)
     .then((resultCard) => {
       if (resultCard === null) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Запрашиваемая карточка не найдена' });
-        return;
+        throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
       if (req.user !== resultCard.owner._id.toString()) {
-        errorsHandler(error, res);
-        return;
+        throw new PermissionError('Недостаточно прав доступа');
       }
       card.findByIdAndRemove(req.params.cardId)
         .then((Card) => {
           res.status(200).send(Card);
         });
     })
-    .catch((err) => {
-      errorsHandler(err, res);
-    });
+    .catch(next);
 }
 
-function likeCard(req, res) {
+function likeCard(req, res, next) {
   card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user } },
@@ -50,17 +40,14 @@ function likeCard(req, res) {
   )
     .then((resultCard) => {
       if (resultCard === null) {
-        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
-        return;
+        throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
       res.status(200).send(resultCard);
     })
-    .catch((err) => {
-      errorsHandler(err, res);
-    });
+    .catch(next);
 }
 
-function disLikeCard(req, res) {
+function disLikeCard(req, res, next) {
   card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user } },
@@ -68,14 +55,11 @@ function disLikeCard(req, res) {
   )
     .then((resultCard) => {
       if (resultCard === null) {
-        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
-        return;
+        throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
       res.status(200).send(resultCard);
     })
-    .catch((err) => {
-      errorsHandler(err, res);
-    });
+    .catch(next);
 }
 
 module.exports = {

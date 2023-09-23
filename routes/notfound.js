@@ -1,10 +1,8 @@
 const notFoundRouter = require('express').Router();
-/* Функция универсального ответа */
-function notFoundAnswer(res) {
-  res.status(404).send({ message: 'Запрашиваемая страница не найдена' });
-}
+const NotFoundError = require('../errors/not-found-err');
+
 /* Обработка несуществующего пути */
-notFoundRouter.use('/', (req, res) => {
-  notFoundAnswer(res);
+notFoundRouter.use('/', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемая страница не найдена'));
 });
 module.exports = notFoundRouter;

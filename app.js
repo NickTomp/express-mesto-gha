@@ -6,10 +6,12 @@ const { celebrate, Joi, errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const notFoundRouter = require('./routes/notfound');
+const errorsHandler = require('./middlewares/errors-handler');
 const auth = require('./middlewares/auth');
 const {
   createUser, login,
 } = require('./controllers/user-controllers');
+const { urlRegex } = require('./constants/urlRegex');
 
 const { PORT = 3000 } = process.env;
 
@@ -30,21 +32,16 @@ app.post('/signup', celebrate({
     password: Joi.string().required().min(4),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/),
+    avatar: Joi.string().pattern(urlRegex),
   }),
 }), createUser);
 
 app.use(auth);
-app.use('/users', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/),
-  }),
-}), userRouter);
+app.use('/users', userRouter);
 app.use('/cards', cardRouter);
 app.use('*', notFoundRouter);
 app.use(errors());
+app.use(errorsHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);

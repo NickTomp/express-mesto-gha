@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 const validate = require('mongoose-validator');
+const validator = require('validator');
+const urlRegex = require('../constants/urlRegex');
 
 const avatarValidator = validate({
   validator: 'matches',
-  arguments: /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/i,
+  arguments: urlRegex,
   message: 'Avatar should be a link',
 });
 
@@ -29,6 +31,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
     required: true,
+    validate: {
+      validator: (v) => validator.isEmail(v),
+      message: 'Email validation failed',
+    },
   },
   password: {
     type: String,

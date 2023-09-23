@@ -1,19 +1,16 @@
 const jwt = require('jsonwebtoken');
-const errorsHandler = require('../controllers/errors-handler');
+const PermissionError = require('../errors/permission-err');
 const { randomString } = require('../controllers/user-controllers');
 
 module.exports = (req, res, next) => {
-  const err = new Error('unathorized');
   if (!req.cookies.jwt) {
-    errorsHandler(err, res);
-    return;
+    throw new PermissionError('Необходима авторизация');
   }
   let payload;
   try {
     payload = jwt.verify(req.cookies.jwt, randomString);
   } catch (error) {
-    errorsHandler(err, res);
-    return;
+    next(new PermissionError('Необходима авторизация'));
   }
   req.user = payload._id;
   next();
